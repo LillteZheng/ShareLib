@@ -1,0 +1,65 @@
+package com.hht.sharelib.socket.tcp;
+
+import com.hht.sharelib.callback.BaseListener;
+import com.hht.sharelib.callback.TcpClientListener;
+import com.hht.sharelib.callback.TcpServerListener;
+import com.hht.sharelib.socket.tcp.client.TcpClient;
+import com.hht.sharelib.socket.tcp.server.TcpServer;
+
+/**
+ * created by zhengshaorui on 2019/7/23
+ * Describe: 用来传输数据的东西
+ */
+public class TcpManager {
+    private static TcpServer mTcpServer;
+    private static TcpClient mTcpClient;
+
+
+
+
+    public static void  createServer(){
+        mTcpServer = TcpServer.create();
+    }
+
+    public static void createClient(String ip,TcpClientListener listener){
+        mTcpClient = TcpClient.create().startConnectServer(ip,listener);
+    }
+
+    public static void  addServerListener(TcpServerListener listener){
+        if (mTcpServer != null){
+            mTcpServer.addResponseListener(listener);
+        }
+
+    }
+
+    public static void  addClientListener(TcpClientListener listener){
+        if (mTcpClient != null){
+            mTcpClient.addResponseListener(listener);
+        }
+    }
+
+
+    public static void sendBroServerMsg(String msg){
+        if (mTcpServer != null){
+            mTcpServer.sendBroadcastMsg(msg);
+        }
+    }
+
+    public static void sendClientMsg(String msg){
+        if (mTcpClient != null){
+           mTcpClient.sendMsgSync(msg);
+        }
+    }
+
+    public static void stopServer(){
+        if (mTcpServer != null){
+            mTcpServer.stop();
+        }
+    }
+
+    public static void stopClient(){
+        if (mTcpClient != null){
+            mTcpClient.stop();
+        }
+    }
+}

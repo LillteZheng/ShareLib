@@ -1,6 +1,10 @@
 package com.hht.sharelib.socket.udp;
 
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+
+import com.hht.sharelib.socket.udp.client.UdpSearcher;
+import com.hht.sharelib.socket.udp.server.UdpProvider;
 
 /**
  * @auther by zhengshaorui on 2019/7/22
@@ -10,32 +14,37 @@ public class UdpManager {
     private static UdpSearcher mSearcher;
     private static UdpProvider mProvider;
 
+
     public static UdpSearcher startSearcher(){
-        mSearcher = new UdpSearcher();
+        mSearcher = UdpSearcher.create();
         return mSearcher;
     }
 
     public static UdpProvider startProvider(){
-        mProvider = new UdpProvider();
+        mProvider = UdpProvider.create();
         return mProvider;
     }
 
 
-    public static void sendUdpBroadcast(){
+    /**
+     * timeout 单位秒
+     * @param listener
+     */
+    public static void sendUdpBroadcast(UdpSearcher.DeviceListener listener){
         if (mSearcher != null) {
-            mSearcher.sendUdpBroadcast();
+            mSearcher.sendUdpBroadcast(2,listener);
         }
     }
 
     public static void stopSearcher(){
         if (mSearcher != null) {
-            mSearcher.exit();
+            mSearcher.stop();
         }
     }
 
     public static void stopProvider(){
         if (mProvider != null) {
-            mProvider.exit();
+            mProvider.stop();
         }
     }
 }
