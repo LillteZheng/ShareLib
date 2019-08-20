@@ -1,1 +1,1 @@
-include ':app', ':sharelib', ':shareclient', ':drawlib'
+include ':app', ':sharelib', ':shareclient'

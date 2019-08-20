@@ -7,8 +7,10 @@
     tools:context=".MainActivity">
 
 
-    <com.zhengsr.drawlib.view.DrawView
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:text="发送"
+        android:onClick="send"/>
 
 </android.support.constraint.ConstraintLayout>

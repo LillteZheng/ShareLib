@@ -5,26 +5,31 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.ShareRequest;
+import com.hht.sharelib.ShareTrans;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.BaseListener;
-import com.hht.sharelib.callback.TcpServerListener;
-import com.hht.sharelib.socket.udp.UdpManager;
+import com.hht.sharelib.callback.ServerListener;
 
-public class MainActivity extends AppCompatActivity implements TcpServerListener {
+public class MainActivity extends AppCompatActivity implements ServerListener {
     private static final String TAG = "MainActivity";
+    private ShareRequest mShareTrans;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ShareManager.getInstance().startServer()
-                    .addServerListener(this);
+        mShareTrans = ShareTrans.get()
+                .nio()
+                .server()
+                .listener(this)
+                .start();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ShareManager.getInstance().stopServer();
+       // ShareTrans.getInstance().stopServer();
+        mShareTrans.stop();
 
     }
 
@@ -48,4 +53,9 @@ public class MainActivity extends AppCompatActivity implements TcpServerListener
         Log.d(TAG, "zsr onClientDisconnect: "+info);
     }
 
+    private int count;
+    public void send(View view) {
+        count ++;
+        mShareTrans.sendBroMsg("服务端数字: "+count);
+    }
 }

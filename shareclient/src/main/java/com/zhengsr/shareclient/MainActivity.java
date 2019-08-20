@@ -7,29 +7,36 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.ShareRequest;
+import com.hht.sharelib.ShareTrans;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.BaseListener;
-import com.hht.sharelib.callback.TcpClientListener;
-import com.hht.sharelib.socket.udp.UdpManager;
-import com.hht.sharelib.socket.udp.client.UdpSearcher;
+import com.hht.sharelib.callback.ClientListener;
+import com.hht.sharelib.transtype.nio.entrance.client.NioClient;
+import com.hht.sharelib.transtype.socket.udp.UdpManager;
+import com.hht.sharelib.transtype.socket.udp.client.UdpSearcher;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements UdpSearcher.DeviceListener, TcpClientListener {
+public class MainActivity extends AppCompatActivity implements UdpSearcher.DeviceListener, ClientListener {
     private static final String TAG = "MainActivity";
     private ProgressDialog mDialog;
+    private ShareRequest mShareTrans;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ShareManager.getInstance().startSearcher();
+        mShareTrans = ShareTrans.get()
+                .nio()
+                .client()
+                .searcheTime(2,this)
+                .listener(this)
+                .start();
     }
 
     public void search(View view) {
         mDialog = ProgressDialog.show(this, null, "正在搜索", true, true);
-        ShareManager.getInstance().sendUdpBroadcast(this);
+        mShareTrans.searchDevice();
         Log.d(TAG, "zsr 开始搜索");
     }
 
@@ -38,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements UdpSearcher.Devic
         mDialog.dismiss();
         if (devices != null && devices.size() > 0){
             DeviceInfo info = devices.get(0);
-            ShareManager.getInstance().connectServer(info.ip,this);
+            mShareTrans.bindWidth(info.ip,this);
             Toast.makeText(this, info.toString(), Toast.LENGTH_SHORT).show();
         }else{
             Toast.makeText(this, "未收到数据", Toast.LENGTH_SHORT).show();
@@ -48,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements UdpSearcher.Devic
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        UdpManager.stopSearcher();
+        mShareTrans.stop();
     }
 
     @Override
@@ -72,6 +79,6 @@ public class MainActivity extends AppCompatActivity implements UdpSearcher.Devic
     }
 
     public void send(View view) {
-        ShareManager.getInstance().sendSingleMsg("i am client");
+        mShareTrans.sendMsg("i am client");
     }
 }
