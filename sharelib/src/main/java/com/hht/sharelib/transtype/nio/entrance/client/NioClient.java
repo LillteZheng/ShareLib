@@ -3,9 +3,9 @@ package com.hht.sharelib.transtype.nio.entrance.client;
 import android.util.Log;
 
 import com.hht.sharelib.CloseUtils;
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ClientListener;
+import com.hht.sharelib.callback.TcpClientListener;
 import com.hht.sharelib.transtype.Client;
 import com.hht.sharelib.transtype.nio.IoContext;
 import com.hht.sharelib.transtype.nio.core.Connector;
@@ -26,11 +26,11 @@ import java.util.concurrent.Executors;
 public class NioClient extends Connector implements Client {
     private static final String TAG = "NioClient";
     private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
-    private ClientListener mResponseListener;
+    private TcpClientListener mResponseListener;
     private DeviceInfo mInfo;
 
     @Override
-    public void bindWidth(final String ip, final ClientListener listener){
+    public void bindWidth(final String ip, final TcpClientListener listener){
         mResponseListener = listener;
         try {
             IoContext.setUp()
@@ -52,7 +52,7 @@ public class NioClient extends Connector implements Client {
                     connectSuccess(socket);
                 } catch (final IOException e) {
                     //e.printStackTrace();
-                    ShareManager.HANDLER.post(new Runnable() {
+                    TransServiceManager.HANDLER.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.serverConnectFail(e.toString());
@@ -65,7 +65,7 @@ public class NioClient extends Connector implements Client {
 
     private void connectSuccess(final SocketChannel socket) {
         if (mResponseListener != null){
-            ShareManager.HANDLER.post(new Runnable() {
+            TransServiceManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     String ip = socket.socket().getInetAddress().getHostAddress();
@@ -96,7 +96,7 @@ public class NioClient extends Connector implements Client {
     public void onChannelClosed(final SocketChannel channel) {
         super.onChannelClosed(channel);
         if (mResponseListener != null){
-            ShareManager.HANDLER.post(new Runnable() {
+            TransServiceManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     mInfo.info = "server disconnect";

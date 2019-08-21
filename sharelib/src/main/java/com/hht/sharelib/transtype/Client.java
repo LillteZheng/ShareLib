@@ -1,6 +1,6 @@
 package com.hht.sharelib.transtype;
 
-import com.hht.sharelib.callback.ClientListener;
+import com.hht.sharelib.callback.TcpClientListener;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
@@ -12,7 +12,7 @@ public  interface Client {
      * @param ip
      * @param listener
      */
-    void bindWidth(final String ip, final ClientListener listener);
+    void bindWidth(final String ip, final TcpClientListener listener);
 
     /**
      * 释放一些资源

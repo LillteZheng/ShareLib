@@ -1,7 +1,7 @@
 package com.hht.sharelib.transtype.socket.tcp;
 
-import com.hht.sharelib.callback.ClientListener;
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpClientListener;
+import com.hht.sharelib.callback.TcpServerListener;
 import com.hht.sharelib.transtype.socket.tcp.client.TcpClient;
 import com.hht.sharelib.transtype.socket.tcp.server.TcpServer;
 
@@ -20,19 +20,19 @@ public class TcpManager {
         mTcpServer = TcpServer.create();
     }
 
-    public static void createClient(String ip,ClientListener listener){
+    public static void createClient(String ip,TcpClientListener listener){
         mTcpClient = TcpClient.create();
         mTcpClient.bindWidth(ip,listener);
     }
 
-    public static void  addServerListener(ServerListener listener){
+    public static void  addServerListener(TcpServerListener listener){
         if (mTcpServer != null){
             mTcpServer.addResponseListener(listener);
         }
 
     }
 
-    public static void  addClientListener(ClientListener listener){
+    public static void  addClientListener(TcpClientListener listener){
         if (mTcpClient != null){
             mTcpClient.addResponseListener(listener);
         }

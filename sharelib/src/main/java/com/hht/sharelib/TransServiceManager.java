@@ -5,7 +5,6 @@ import android.os.Looper;
 
 import com.hht.sharelib.bean.ConfigBean;
 import com.hht.sharelib.callback.BaseListener;
-import com.hht.sharelib.callback.ClientListener;
 import com.hht.sharelib.transtype.socket.udp.UdpManager;
 import com.hht.sharelib.transtype.socket.udp.client.UdpSearcher;
 import com.hht.sharelib.type.KindType;
@@ -15,50 +14,50 @@ import com.hht.sharelib.type.TransType;
  * created by zhengshaorui on 2019/8/9
  * Describe: 统一管理接口
  */
-public class ShareManager {
+public class TransServiceManager {
 
     public static Handler HANDLER = new Handler(Looper.getMainLooper());
     private ConfigBean mConfigBean;
-    private static ShareRequest mShareRequest;
+    private static TcpShareConfig mShareRequest;
     // ===============================================
     //              专门用于协同传输的接口
     // ===============================================
 
-    private ShareManager(){
+    private TransServiceManager(){
         mConfigBean = new ConfigBean();
     }
-    public static ShareManager get(){
-        mShareRequest = ShareRequest.create();
-        return new ShareManager();
+    public static TransServiceManager get(){
+        mShareRequest = TcpShareConfig.create();
+        return new TransServiceManager();
     }
 
-    public ShareManager socket(){
+    public TransServiceManager socket(){
         mConfigBean.transType = TransType.SOCKET;
         return this;
     }
-    public ShareManager nio(){
+    public TransServiceManager nio(){
         mConfigBean.transType = TransType.NIO;
         return this;
     }
 
-    public ShareManager listener(BaseListener listener){
+    public TransServiceManager listener(BaseListener listener){
         mConfigBean.listener = listener;
         return this;
     }
 
-    public ShareManager searchTime(int time, UdpSearcher.DeviceListener listener) {
-        mConfigBean.searchTime = time;
-        mConfigBean.deviceListener = listener;
-        return this;
-    }
 
-    public ShareManager server(){
+
+    public TransServiceManager server(){
         mConfigBean.kindType = KindType.SERVER;
         return this;
     }
-
-    public ShareManager client(){
+    /**
+     * 绑定服务端
+     * @param ip
+     */
+    public TransServiceManager client(String ip){
         mConfigBean.kindType = KindType.CLIENT;
+        mConfigBean.ip = ip;
         return this;
     }
 
@@ -70,38 +69,50 @@ public class ShareManager {
         mShareRequest.start(mConfigBean);
     }
 
-
-    public void searchDevice(){
-        UdpManager.sendUdpBroadcast(mConfigBean.searchTime,mConfigBean.deviceListener);
-    }
-
     /**
      * 只能用于服务端发送
      * @param msg
      */
-    public void sendBroMsg(String msg){
+    public static  void sendBroServerMsg(String msg){
         mShareRequest.sendBroMsg(msg);
     }
     /**
      * 只能用于客户端发送
      * @param msg
      */
-    public void sendMsg(String msg){
+    public static void sendClientMsg(String msg){
         mShareRequest.sendMsg(msg);
     }
 
-    public void stop() {
+    public static void stop() {
         mShareRequest.stop();
     }
 
     /**
-     * 绑定服务端
-     * @param ip
+     * UDP部分
+     * @param time
      * @param listener
      */
-    public void bindWidth(String ip, BaseListener listener) {
-        mShareRequest.bindWidth(ip, (ClientListener) listener);
+
+    public static void searchDevice(int time, UdpSearcher.DeviceListener listener) {
+        UdpManager.searchDevice(time, listener);
     }
+
+    public static void startProvider(){
+        UdpManager.startProvider();
+    }
+    public static void stopProvider(){
+        UdpManager.stopProvider();
+    }
+
+    public static void stopSearcher(){
+        UdpManager.stopSearcher();
+    }
+
+
+
+
+
 
 
 

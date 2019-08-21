@@ -2,9 +2,9 @@ package com.hht.sharelib.transtype.socket.tcp.server;
 
 import android.util.Log;
 
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpServerListener;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.socket.TCPConstants;
 import com.hht.sharelib.transtype.socket.tcp.DataHandle;
@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 public class TcpServer implements DataHandle.DataListener,Server {
     private static final String TAG = "TcpServer";
     private List<DataHandle> mDataHandles = new ArrayList<>();
-    private ServerListener mResponseListener;
+    private TcpServerListener mResponseListener;
     //转发线程池，异步并发
     private final ExecutorService mForwardingThreadPoolExecutor;
     private ClientListener mClientListener;
@@ -166,7 +166,7 @@ public class TcpServer implements DataHandle.DataListener,Server {
 
     @Override
     public void disConnect(final DataHandle handle) {
-        ShareManager.HANDLER.post(new Runnable() {
+        TransServiceManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -186,7 +186,7 @@ public class TcpServer implements DataHandle.DataListener,Server {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareManager.HANDLER.post(new Runnable() {
+        TransServiceManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -199,7 +199,7 @@ public class TcpServer implements DataHandle.DataListener,Server {
     }
 
     @Override
-    public void addResponseListener(ServerListener listener){
+    public void addResponseListener(TcpServerListener listener){
         mResponseListener = listener;
     }
 

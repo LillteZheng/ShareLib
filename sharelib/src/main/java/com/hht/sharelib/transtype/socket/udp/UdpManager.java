@@ -30,10 +30,11 @@ public class UdpManager {
      * timeout 单位秒
      * @param listener
      */
-    public static void sendUdpBroadcast(int time,UdpSearcher.DeviceListener listener){
-        if (mSearcher != null) {
-            mSearcher.sendUdpBroadcast(time,listener);
+    public static void searchDevice(int time, UdpSearcher.DeviceListener listener){
+        if (mSearcher == null){
+            startSearcher();
         }
+        mSearcher.sendUdpBroadcast(time,listener);
     }
 
     public static void stopSearcher(){

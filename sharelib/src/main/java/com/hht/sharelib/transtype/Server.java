@@ -1,6 +1,6 @@
 package com.hht.sharelib.transtype;
 
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpServerListener;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
@@ -22,5 +22,5 @@ public interface Server {
      * 监听数据
      * @param listener
      */
-     void addResponseListener(ServerListener listener);
+     void addResponseListener(TcpServerListener listener);
 }

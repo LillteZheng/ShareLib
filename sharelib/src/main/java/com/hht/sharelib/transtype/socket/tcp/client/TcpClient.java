@@ -1,8 +1,8 @@
 package com.hht.sharelib.transtype.socket.tcp.client;
 
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ClientListener;
+import com.hht.sharelib.callback.TcpClientListener;
 import com.hht.sharelib.transtype.Client;
 import com.hht.sharelib.transtype.socket.TCPConstants;
 import com.hht.sharelib.transtype.socket.tcp.DataHandle;
@@ -35,7 +35,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
 
     @Override
-    public void bindWidth(final String ip, final ClientListener listener) {
+    public void bindWidth(final String ip, final TcpClientListener listener) {
         mResponseListener = listener;
         mExecutorService.execute(new Runnable() {
             @Override
@@ -51,7 +51,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
                 } catch (final IOException e) {
                     e.printStackTrace();
-                    ShareManager.HANDLER.post(new Runnable() {
+                    TransServiceManager.HANDLER.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.serverConnectFail(e.toString());
@@ -88,7 +88,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
     @Override
     public void disConnect(final DataHandle handle) {
         if (mResponseListener != null){
-            ShareManager.HANDLER.post(new Runnable() {
+            TransServiceManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     DeviceInfo info = handle.getInfo();
@@ -107,7 +107,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareManager.HANDLER.post(new Runnable() {
+        TransServiceManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -120,8 +120,8 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
     }
 
-    private ClientListener mResponseListener;
-    public void addResponseListener(ClientListener listener){
+    private TcpClientListener mResponseListener;
+    public void addResponseListener(TcpClientListener listener){
         mResponseListener = listener;
     }
 }

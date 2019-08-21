@@ -3,9 +3,9 @@ package com.hht.sharelib.transtype.nio.entrance.server;
 import android.util.Log;
 
 import com.hht.sharelib.CloseUtils;
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpServerListener;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.nio.IoContext;
 import com.hht.sharelib.transtype.nio.core.impl.IoSelectortProvider;
@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 public class NioServer  implements NioDataHandle.DataListener,Server {
     private static final String TAG = "NioServer";
     private List<NioDataHandle> mNioDataHandles = new ArrayList<>();
-    private ServerListener mResponseListener;
+    private TcpServerListener mResponseListener;
     //转发线程池，异步并发
     private final ExecutorService mForwardingThreadPoolExecutor;
     private ClientListener mClientListener;
@@ -217,7 +217,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
     @Override
     public synchronized void onSelfClosed(final NioDataHandle handle) {
         mNioDataHandles.remove(handle);
-        ShareManager.HANDLER.post(new Runnable() {
+        TransServiceManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -232,7 +232,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareManager.HANDLER.post(new Runnable() {
+        TransServiceManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -245,7 +245,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
     }
 
     @Override
-    public void addResponseListener(ServerListener listener){
+    public void addResponseListener(TcpServerListener listener){
         mResponseListener = listener;
     }
 

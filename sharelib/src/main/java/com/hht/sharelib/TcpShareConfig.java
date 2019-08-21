@@ -1,9 +1,8 @@
 package com.hht.sharelib;
 
 import com.hht.sharelib.bean.ConfigBean;
-import com.hht.sharelib.callback.BaseListener;
-import com.hht.sharelib.callback.ClientListener;
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpClientListener;
+import com.hht.sharelib.callback.TcpServerListener;
 import com.hht.sharelib.transtype.Client;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.nio.entrance.client.NioClient;
@@ -15,19 +14,19 @@ import com.hht.sharelib.type.KindType;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
- * Describe:
+ * Describe: TCP 的发送接收管理类
  */
-public class ShareRequest {
+public class TcpShareConfig {
 
     private ConfigBean mConfigBean;
     private Server mServer;
     private Client mClient;
 
-   public static ShareRequest create(){
-       return new ShareRequest();
+   public static TcpShareConfig create(){
+       return new TcpShareConfig();
    }
 
-   private ShareRequest(){}
+   private TcpShareConfig(){}
 
    public void start(ConfigBean configBean){
        mConfigBean = configBean;
@@ -42,7 +41,6 @@ public class ShareRequest {
 
 
     private void startServer() {
-        UdpManager.startProvider();
         switch (mConfigBean.transType){
             case NIO:
                 if (mServer == null) {
@@ -58,10 +56,9 @@ public class ShareRequest {
                 break;
             default:break;
         }
-        mServer.addResponseListener((ServerListener) mConfigBean.listener);
+        mServer.addResponseListener((TcpServerListener) mConfigBean.listener);
     }
     private void startClient() {
-        UdpManager.startSearcher();
         switch (mConfigBean.transType){
             case NIO:
                 if (mClient == null) {
@@ -77,11 +74,9 @@ public class ShareRequest {
                 break;
             default:break;
         }
+        mClient.bindWidth(mConfigBean.ip, (TcpClientListener) mConfigBean.listener);
     }
 
-    public void searchDevice(){
-        UdpManager.sendUdpBroadcast(mConfigBean.searchTime,mConfigBean.deviceListener);
-    }
 
     /**
      * 只能用于服务端发送
@@ -100,20 +95,11 @@ public class ShareRequest {
 
     public void stop() {
         if (mConfigBean.kindType == KindType.SERVER) {
-            UdpManager.stopProvider();
             mServer.stop();
         }else if (mConfigBean.kindType == KindType.CLIENT){
             mClient.stop();
-            UdpManager.stopSearcher();
         }
     }
 
-    /**
-     * 绑定服务端
-     * @param ip
-     * @param listener
-     */
-    public void bindWidth(String ip, BaseListener listener) {
-        mClient.bindWidth(ip, (ClientListener) listener);
-    }
+
 }

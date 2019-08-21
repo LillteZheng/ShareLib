@@ -7,17 +7,12 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="search"
-        android:text="搜索"/>
 
-    <Button
+    <FrameLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="send"
-        android:text="发送"
-        />
+        android:layout_height="match_parent"/>
+
+
 
 </LinearLayout>

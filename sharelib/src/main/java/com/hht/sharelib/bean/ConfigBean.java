@@ -11,8 +11,7 @@ import com.hht.sharelib.type.TransType;
  */
 public class ConfigBean {
     public TransType transType = TransType.NIO;
-    public int searchTime = 2000;
-    public UdpSearcher.DeviceListener deviceListener;
     public BaseListener listener ;
     public KindType kindType;
+    public String ip;
 }

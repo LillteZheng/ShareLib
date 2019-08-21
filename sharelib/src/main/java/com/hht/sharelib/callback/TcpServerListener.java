@@ -4,7 +4,7 @@ import com.hht.sharelib.bean.DeviceInfo;
 
 import java.net.Socket;
 
-public interface ServerListener extends BaseListener {
+public interface TcpServerListener extends BaseListener {
     void onClientCount(int count);
     void onClientConnected(DeviceInfo info);
     void onClientDisconnect(DeviceInfo info);

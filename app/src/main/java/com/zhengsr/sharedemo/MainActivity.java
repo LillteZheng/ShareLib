@@ -5,20 +5,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.hht.sharelib.ShareRequest;
-import com.hht.sharelib.ShareManager;
+import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ServerListener;
+import com.hht.sharelib.callback.TcpServerListener;
 
-public class MainActivity extends AppCompatActivity implements ServerListener {
+public class MainActivity extends AppCompatActivity implements TcpServerListener {
     private static final String TAG = "MainActivity";
-    private ShareRequest mShareTrans;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mShareTrans = ShareManager.get()
+        TransServiceManager.startProvider();
+        TransServiceManager.get()
                 .nio()
                 .server()
                 .listener(this)
@@ -28,8 +27,8 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       // ShareManager.getInstance().stopServer();
-        mShareTrans.stop();
+        TransServiceManager.stopProvider();
+        TransServiceManager.stop();
 
     }
 
@@ -56,6 +55,6 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     private int count;
     public void send(View view) {
         count ++;
-        mShareTrans.sendBroMsg("服务端数字: "+count);
+        TransServiceManager.sendBroServerMsg("服务端数字: "+count);
     }
 }
