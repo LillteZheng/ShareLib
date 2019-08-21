@@ -2,6 +2,7 @@ package com.hht.sharelib.transtype.socket.udp;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.hht.sharelib.transtype.socket.udp.client.UdpSearcher;
 import com.hht.sharelib.transtype.socket.udp.server.UdpProvider;
@@ -11,6 +12,7 @@ import com.hht.sharelib.transtype.socket.udp.server.UdpProvider;
  * describe: 用于分辨是udp发送还是接收类
  */
 public class UdpManager {
+    private static final String TAG = "UdpManager";
     private static UdpSearcher mSearcher;
     private static UdpProvider mProvider;
 
@@ -34,18 +36,21 @@ public class UdpManager {
         if (mSearcher == null){
             startSearcher();
         }
+
         mSearcher.sendUdpBroadcast(time,listener);
     }
 
     public static void stopSearcher(){
         if (mSearcher != null) {
             mSearcher.stop();
+            mSearcher = null;
         }
     }
 
     public static void stopProvider(){
         if (mProvider != null) {
             mProvider.stop();
+            mProvider = null;
         }
     }
 }

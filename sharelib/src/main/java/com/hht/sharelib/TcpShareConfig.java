@@ -96,8 +96,10 @@ public class TcpShareConfig {
     public void stop() {
         if (mConfigBean.kindType == KindType.SERVER) {
             mServer.stop();
+            mServer = null;
         }else if (mConfigBean.kindType == KindType.CLIENT){
             mClient.stop();
+            mClient = null;
         }
     }
 
