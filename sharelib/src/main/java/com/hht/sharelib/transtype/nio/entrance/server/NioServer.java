@@ -3,7 +3,7 @@ package com.hht.sharelib.transtype.nio.entrance.server;
 import android.util.Log;
 
 import com.hht.sharelib.CloseUtils;
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.ServerListener;
 import com.hht.sharelib.transtype.Server;
@@ -217,7 +217,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
     @Override
     public synchronized void onSelfClosed(final NioDataHandle handle) {
         mNioDataHandles.remove(handle);
-        ShareTrans.HANDLER.post(new Runnable() {
+        ShareManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -232,7 +232,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareTrans.HANDLER.post(new Runnable() {
+        ShareManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {

@@ -2,9 +2,8 @@ package com.hht.sharelib.transtype.socket.tcp.server;
 
 import android.util.Log;
 
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.callback.ClientListener;
 import com.hht.sharelib.callback.ServerListener;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.socket.TCPConstants;
@@ -167,7 +166,7 @@ public class TcpServer implements DataHandle.DataListener,Server {
 
     @Override
     public void disConnect(final DataHandle handle) {
-        ShareTrans.HANDLER.post(new Runnable() {
+        ShareManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {
@@ -187,7 +186,7 @@ public class TcpServer implements DataHandle.DataListener,Server {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareTrans.HANDLER.post(new Runnable() {
+        ShareManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {

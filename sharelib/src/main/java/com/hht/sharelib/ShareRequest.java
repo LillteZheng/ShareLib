@@ -23,27 +23,36 @@ public class ShareRequest {
     private Server mServer;
     private Client mClient;
 
-    public ShareRequest(ConfigBean configBean) {
-        mConfigBean = configBean;
-        if (KindType.SERVER == configBean.kindType){
-            startServer();
-        }else if (KindType.CLIENT == configBean.kindType){
-            startClient();
-        }else {
-            throw new RuntimeException("you need set kindType");
-        }
-    }
+   public static ShareRequest create(){
+       return new ShareRequest();
+   }
+
+   private ShareRequest(){}
+
+   public void start(ConfigBean configBean){
+       mConfigBean = configBean;
+       if (KindType.SERVER == configBean.kindType){
+           startServer();
+       }else if (KindType.CLIENT == configBean.kindType){
+           startClient();
+       }else {
+           throw new RuntimeException("you need set kindType");
+       }
+   }
 
 
     private void startServer() {
         UdpManager.startProvider();
         switch (mConfigBean.transType){
             case NIO:
-                mServer = NioServer.create();
-
+                if (mServer == null) {
+                    mServer = NioServer.create();
+                }
                 break;
             case SOCKET:
-                mServer = TcpServer.create();
+                if (mServer == null) {
+                    mServer = TcpServer.create();
+                }
                 break;
             case NETTY:
                 break;
@@ -55,10 +64,14 @@ public class ShareRequest {
         UdpManager.startSearcher();
         switch (mConfigBean.transType){
             case NIO:
-                mClient = new NioClient();
+                if (mClient == null) {
+                    mClient = new NioClient();
+                }
                 break;
             case SOCKET:
-                mClient = TcpClient.create();
+                if (mClient == null) {
+                    mClient = TcpClient.create();
+                }
                 break;
             case NETTY:
                 break;

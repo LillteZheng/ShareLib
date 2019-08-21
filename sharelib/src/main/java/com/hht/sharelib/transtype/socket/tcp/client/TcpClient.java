@@ -1,6 +1,6 @@
 package com.hht.sharelib.transtype.socket.tcp.client;
 
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.ClientListener;
 import com.hht.sharelib.transtype.Client;
@@ -51,7 +51,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
                 } catch (final IOException e) {
                     e.printStackTrace();
-                    ShareTrans.HANDLER.post(new Runnable() {
+                    ShareManager.HANDLER.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.serverConnectFail(e.toString());
@@ -88,7 +88,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
     @Override
     public void disConnect(final DataHandle handle) {
         if (mResponseListener != null){
-            ShareTrans.HANDLER.post(new Runnable() {
+            ShareManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     DeviceInfo info = handle.getInfo();
@@ -107,7 +107,7 @@ public class TcpClient implements DataHandle.DataListener,Client {
 
     @Override
     public void onConnect(final DeviceInfo info) {
-        ShareTrans.HANDLER.post(new Runnable() {
+        ShareManager.HANDLER.post(new Runnable() {
             @Override
             public void run() {
                 if (mResponseListener != null) {

@@ -1,6 +1,6 @@
 package com.hht.sharelib.transtype.socket.udp.client;
 
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.transtype.socket.UDPConstants;
 import com.hht.sharelib.CloseUtils;
@@ -59,7 +59,7 @@ public class UdpSearcher {
                     sendBroadcast();
                     downLatch.await(timeout, TimeUnit.MILLISECONDS);
                     //切换到主线程
-                    ShareTrans.HANDLER.post(new Runnable() {
+                    ShareManager.HANDLER.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.findDevice(mResponseListener.getDeviceInfos());

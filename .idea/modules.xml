@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ShareLib.iml" filepath="$PROJECT_DIR$/ShareLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/drawlib/drawlib.iml" filepath="$PROJECT_DIR$/drawlib/drawlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/shareclient/shareclient.iml" filepath="$PROJECT_DIR$/shareclient/shareclient.iml" />
       <module fileurl="file://$PROJECT_DIR$/sharelib/sharelib.iml" filepath="$PROJECT_DIR$/sharelib/sharelib.iml" />
     </modules>

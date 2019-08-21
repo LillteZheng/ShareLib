@@ -7,12 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.ShareRequest;
-import com.hht.sharelib.ShareTrans;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.ClientListener;
-import com.hht.sharelib.transtype.nio.entrance.client.NioClient;
-import com.hht.sharelib.transtype.socket.udp.UdpManager;
 import com.hht.sharelib.transtype.socket.udp.client.UdpSearcher;
 
 import java.util.List;
@@ -26,10 +24,10 @@ public class MainActivity extends AppCompatActivity implements UdpSearcher.Devic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mShareTrans = ShareTrans.get()
+        mShareTrans = ShareManager.get()
                 .nio()
                 .client()
-                .searcheTime(2,this)
+                .searchTime(2,this)
                 .listener(this)
                 .start();
     }

@@ -6,7 +6,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.hht.sharelib.ShareRequest;
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.ServerListener;
 
@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mShareTrans = ShareTrans.get()
+        mShareTrans = ShareManager.get()
                 .nio()
                 .server()
                 .listener(this)
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       // ShareTrans.getInstance().stopServer();
+       // ShareManager.getInstance().stopServer();
         mShareTrans.stop();
 
     }

@@ -3,7 +3,7 @@ package com.hht.sharelib.transtype.nio.entrance.client;
 import android.util.Log;
 
 import com.hht.sharelib.CloseUtils;
-import com.hht.sharelib.ShareTrans;
+import com.hht.sharelib.ShareManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.ClientListener;
 import com.hht.sharelib.transtype.Client;
@@ -52,7 +52,7 @@ public class NioClient extends Connector implements Client {
                     connectSuccess(socket);
                 } catch (final IOException e) {
                     //e.printStackTrace();
-                    ShareTrans.HANDLER.post(new Runnable() {
+                    ShareManager.HANDLER.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.serverConnectFail(e.toString());
@@ -65,7 +65,7 @@ public class NioClient extends Connector implements Client {
 
     private void connectSuccess(final SocketChannel socket) {
         if (mResponseListener != null){
-            ShareTrans.HANDLER.post(new Runnable() {
+            ShareManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     String ip = socket.socket().getInetAddress().getHostAddress();
@@ -96,7 +96,7 @@ public class NioClient extends Connector implements Client {
     public void onChannelClosed(final SocketChannel channel) {
         super.onChannelClosed(channel);
         if (mResponseListener != null){
-            ShareTrans.HANDLER.post(new Runnable() {
+            ShareManager.HANDLER.post(new Runnable() {
                 @Override
                 public void run() {
                     mInfo.info = "server disconnect";
