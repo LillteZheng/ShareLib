@@ -1,6 +1,9 @@
 package com.hht.sharelib.transtype;
 
 import com.hht.sharelib.callback.TcpClientListener;
+import com.hht.sharelib.transtype.nio.packet.SendPacket;
+
+import java.io.File;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
@@ -24,4 +27,9 @@ public  interface Client {
      * @param msg
      */
     void sendMsg(String msg);
+
+    /**
+     * 发送数据包
+     */
+    void sendFile(File file);
 }

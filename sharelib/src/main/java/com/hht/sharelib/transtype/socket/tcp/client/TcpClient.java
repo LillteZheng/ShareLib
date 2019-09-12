@@ -6,8 +6,9 @@ import com.hht.sharelib.callback.TcpClientListener;
 import com.hht.sharelib.transtype.Client;
 import com.hht.sharelib.transtype.socket.TCPConstants;
 import com.hht.sharelib.transtype.socket.tcp.DataHandle;
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -75,6 +76,11 @@ public class TcpClient implements DataHandle.DataListener,Client {
         if (mDataHandle != null){
             mDataHandle.sendMsg(msg);
         }
+    }
+
+    @Override
+    public void sendFile(File file) {
+
     }
 
 

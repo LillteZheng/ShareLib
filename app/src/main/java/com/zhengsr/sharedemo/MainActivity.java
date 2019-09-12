@@ -9,6 +9,8 @@ import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.TcpServerListener;
 
+import java.io.File;
+
 public class MainActivity extends AppCompatActivity implements TcpServerListener {
     private static final String TAG = "MainActivity";
 
@@ -35,6 +37,16 @@ public class MainActivity extends AppCompatActivity implements TcpServerListener
     @Override
     public void onResponse(String msg) {
         Log.d(TAG, "zsr onResponse: "+msg);
+    }
+
+    @Override
+    public void onFileStart(byte type) {
+
+    }
+
+    @Override
+    public void onFileSuccess(File file, byte type) {
+
     }
 
     @Override

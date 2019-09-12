@@ -2,7 +2,11 @@ package com.hht.sharelib.transtype.nio.entrance.server;
 
 import android.util.Log;
 
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.transtype.nio.packet.ReceivePacket;
+import com.hht.sharelib.transtype.nio.packet.box.FileReceivePacket;
+import com.hht.sharelib.transtype.nio.packet.box.FileSendPacket;
+import com.hht.sharelib.transtype.nio.packet.box.StringReceivePacket;
+import com.hht.sharelib.utils.CloseUtils;
 import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.TcpServerListener;
@@ -10,7 +14,9 @@ import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.nio.IoContext;
 import com.hht.sharelib.transtype.nio.core.impl.IoSelectortProvider;
 import com.hht.sharelib.transtype.socket.TCPConstants;
+import com.hht.sharelib.utils.Foo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -101,6 +107,24 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
         }
     }
 
+    @Override
+    public void sendBroFile(File file) {
+        if (mResponseListener != null) {
+            Foo.HANDLER.post(new Runnable() {
+                @Override
+                public void run() {
+                    mResponseListener.onFileStart(Foo.TYPE_TRANS);
+                }
+            });
+        }
+        //发送之后，也要提醒对方要开始接收了
+        sendBroMsg(Foo.FILE_START);
+        synchronized (NioServer.class) {
+            for (NioDataHandle nioDataHandle : mNioDataHandles) {
+                nioDataHandle.sendPacket(new FileSendPacket(file));
+            }
+        }
+    }
 
 
     /**
@@ -186,11 +210,51 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
 
 
     @Override
-    public void onResponse(final NioDataHandle handle, final String msg) {
+    public void onResponse(final NioDataHandle handle, final ReceivePacket packet) {
 
-        //先发给自身
-        if (mResponseListener != null){
-            mResponseListener.onResponse(msg);
+        if (packet instanceof StringReceivePacket){
+            final String str = ((StringReceivePacket) packet).entity();
+            //接收到文件标志
+            if (str.equals(Foo.FILE_END)){
+                if (mResponseListener != null){
+                    Foo.HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mResponseListener.onFileSuccess(null,Foo.TYPE_TRANS);
+                        }
+                    });
+
+                }
+                return;
+            }else if (str.equals(Foo.FILE_START)){
+                //提示接收开始
+                Foo.HANDLER.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mResponseListener.onFileStart(Foo.TYPE_ACK);
+                    }
+                });
+                return;
+            }
+            //先发给自身
+            if (mResponseListener != null){
+                mResponseListener.onResponse(str);
+            }
+        }
+
+        if (packet instanceof FileReceivePacket){
+            final File file = ((FileReceivePacket) packet).entity();
+            if (mResponseListener != null){
+                Foo.HANDLER.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //此时已经接收到客户端发来文件，应该提示接收完成
+                        mResponseListener.onFileSuccess(file,Foo.TYPE_ACK);
+                    }
+                });
+            }
+            //发送一个应答信号过去，提示客户端已经接收到了文件
+            sendBroMsg(Foo.FILE_END);
         }
 
         //转发给其他客户端
@@ -203,12 +267,23 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
                         if (NioDataHandle == handle){
                             continue;
                         }
-                        //对其他客户端发送消息
-                        NioDataHandle.send(msg);
+                        if (packet instanceof StringReceivePacket) {
+                            final String str = ((StringReceivePacket) packet).entity();
+                            NioDataHandle.send(str);
+                        }
+                        if (packet instanceof FileReceivePacket){
+                            File file = ((FileReceivePacket) packet).entity();
+                            NioDataHandle.sendPacket(new FileSendPacket(file));
+                        }
+
                     }
                 }
             }
         });
+
+
+
+
 
     }
 
@@ -238,7 +313,11 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
                 if (mResponseListener != null) {
                     info.info = "client connected";
                     mResponseListener.onClientConnected(info);
-                    mResponseListener.onClientCount(mNioDataHandles.size());
+                    if (mNioDataHandles.size() == 0){
+                        mResponseListener.onClientCount(1);
+                    }else {
+                        mResponseListener.onClientCount(mNioDataHandles.size());
+                    }
                 }
             }
         });

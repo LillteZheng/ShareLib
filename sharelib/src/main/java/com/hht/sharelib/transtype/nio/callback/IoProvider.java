@@ -32,16 +32,6 @@ public interface IoProvider extends Closeable{
      * 输出实现类，继承 runnable，用于线程池调度
      */
     abstract class HandleOutputCallback implements Runnable{
-        Object attach;
-
-        public <T> T getAttach() {
-            return (T) attach;
-        }
-
-        public void setAttach(Object attach) {
-            this.attach = attach;
-        }
-
         @Override
         public void run() {
             canProviderOutput();

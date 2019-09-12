@@ -1,10 +1,10 @@
 package com.hht.sharelib.transtype.socket.udp.server;
 
-import android.util.Log;
+import android.os.Build;
 
 import com.hht.sharelib.transtype.socket.TCPConstants;
 import com.hht.sharelib.transtype.socket.UDPConstants;
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -65,16 +65,18 @@ public class UdpProvider {
                     buffer = ByteBuffer.wrap(bytes);
                     int cmd = buffer.getInt();
                     int responsePort = buffer.getInt();
-                    Log.d(TAG, "zsr UdpProvider: "+ip+" "+port+" "+cmd+" "+responsePort);
+                   // Log.d(TAG, "zsr UdpProvider: "+ip+" "+port+" "+cmd+" "+responsePort);
 
                     if (UDPConstants.REQUEST == cmd && responsePort > 0){
                         /**
                          * 返回自身端口和数据
                          */
-                        ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(128);
                       //  byteBuffer.put(UDPConstants.HEADER);
                         byteBuffer.putInt(UDPConstants.RESPONSE);
                         byteBuffer.putInt(TCPConstants.PORT_SERVER);
+                        String modelName = Build.MODEL;
+                        byteBuffer.put(modelName.getBytes());
                         DatagramPacket responsePacket = new DatagramPacket(
                                 byteBuffer.array(),
                                 byteBuffer.position(),

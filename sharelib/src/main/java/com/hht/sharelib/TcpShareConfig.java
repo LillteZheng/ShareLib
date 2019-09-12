@@ -7,10 +7,13 @@ import com.hht.sharelib.transtype.Client;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.nio.entrance.client.NioClient;
 import com.hht.sharelib.transtype.nio.entrance.server.NioServer;
+import com.hht.sharelib.transtype.nio.packet.box.FileSendPacket;
 import com.hht.sharelib.transtype.socket.tcp.client.TcpClient;
 import com.hht.sharelib.transtype.socket.tcp.server.TcpServer;
 import com.hht.sharelib.transtype.socket.udp.UdpManager;
 import com.hht.sharelib.type.KindType;
+
+import java.io.File;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
@@ -104,4 +107,15 @@ public class TcpShareConfig {
     }
 
 
+    /**
+     * 只能用于客户端发送
+     * @param file
+     */
+    public void sendFile(File file) {
+        mClient.sendFile(file);
+    }
+
+    public void sendBroFile(File file) {
+        mServer.sendBroFile(file);
+    }
 }

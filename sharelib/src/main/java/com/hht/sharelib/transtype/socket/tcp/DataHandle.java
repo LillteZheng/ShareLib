@@ -3,7 +3,8 @@ package com.hht.sharelib.transtype.socket.tcp;
 import android.text.TextUtils;
 
 import com.hht.sharelib.bean.DeviceInfo;
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.transtype.nio.packet.SendPacket;
+import com.hht.sharelib.utils.CloseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,6 +59,8 @@ public class DataHandle {
             mWriteHandle.sendMsg(msg);
         }
     }
+
+
 
     public DeviceInfo getInfo(){
         if (mSocket != null) {

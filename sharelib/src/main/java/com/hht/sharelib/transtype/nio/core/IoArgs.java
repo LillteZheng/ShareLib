@@ -3,7 +3,9 @@ package com.hht.sharelib.transtype.nio.core;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * created by @author zhengshaorui on 2019/8/20
@@ -11,9 +13,8 @@ import java.nio.channels.SocketChannel;
  */
 public class IoArgs {
     //byte限制
-    private int mLimit = 256;
-    private final byte[] BYTES = new byte[mLimit];
-    private ByteBuffer mBuffer = ByteBuffer.wrap(BYTES);
+    private int mLimit = 512;
+    private ByteBuffer mBuffer = ByteBuffer.allocate(mLimit);
 
     /**
      * 从 socketchannel 读数据到 bytebuffer
@@ -36,16 +37,23 @@ public class IoArgs {
     }
 
     /**
-     * 从byte数组读数据到bytebuffer
-     * @param bytes
-     * @param offset
+     * 从 socketchannel 读数据到 bytebuffer
+     * @param channel
      * @return
+     * @throws IOException
      */
-    public int readFrom(byte[] bytes,int offset){
-        //拿到当前bytebuffer可填充的数量
-        int size = Math.min(bytes.length - offset,mBuffer.remaining());
-        mBuffer.put(bytes,offset,size);
-        return size;
+    public int readFrom(ReadableByteChannel channel) throws IOException {
+        startWriting();
+        int length = 0;
+        while (mBuffer.hasRemaining()) {
+            int read = channel.read(mBuffer);
+            if (read < 0) {
+                throw new EOFException();
+            }
+            length += read;
+        }
+        finishWriting();
+        return length;
     }
 
     /**
@@ -66,16 +74,20 @@ public class IoArgs {
     }
 
     /**
-     * 把bytebuffer的数据写到byte中
-     * @param bytes
-     * @param offset
+     * 把bytebuffer的数据写到 socketchannel中
+     * @param channel
      * @return
      */
-    public int writeTo(byte[] bytes,int offset){
-        //拿到当前bytebuffer可填充的数量
-        int size = Math.min(bytes.length - offset,mBuffer.remaining());
-        mBuffer.get(bytes,offset,size);
-        return size;
+    public int writeTo(WritableByteChannel channel) throws IOException {
+        int length = 0;
+        while (mBuffer.hasRemaining()){
+            int write = channel.write(mBuffer);
+            if (write < 0){
+                throw new  EOFException();
+            }
+            length += write;
+        }
+        return length;
     }
 
 
@@ -103,7 +115,9 @@ public class IoArgs {
     }
 
     public void writeLength(int length) {
+        startWriting();
         mBuffer.putInt(length);
+        finishWriting();
     }
 
     public int readLength(){
@@ -114,8 +128,31 @@ public class IoArgs {
         return mBuffer.capacity();
     }
 
-    public interface IoArgsEventListener{
-        void onStart(IoArgs args);
-        void onCompleted(IoArgs args);
+
+    /**
+     * IoArgs 提供者、处理者；数据的生产或消费者
+     */
+    public interface IoArgsEventProcessor {
+        /**
+         * 提供一份可消费的IoArgs
+         *
+         * @return IoArgs
+         */
+        IoArgs provideIoArgs();
+
+        /**
+         * 消费失败时回调
+         *
+         * @param args IoArgs
+         * @param e    异常信息
+         */
+        void onConsumeFailed(IoArgs args, Exception e);
+
+        /**
+         * 消费成功
+         *
+         * @param args IoArgs
+         */
+        void onConsumeCompleted(IoArgs args);
     }
 }

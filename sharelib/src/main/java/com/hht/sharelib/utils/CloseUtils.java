@@ -1,4 +1,4 @@
-package com.hht.sharelib;
+package com.hht.sharelib.utils;
 
 import android.graphics.Color;
 

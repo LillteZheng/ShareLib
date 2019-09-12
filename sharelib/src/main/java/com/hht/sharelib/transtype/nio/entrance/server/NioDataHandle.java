@@ -1,9 +1,13 @@
 package com.hht.sharelib.transtype.nio.entrance.server;
 
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.transtype.nio.packet.ReceivePacket;
+import com.hht.sharelib.transtype.nio.packet.box.StringReceivePacket;
+import com.hht.sharelib.utils.CloseUtils;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.transtype.nio.core.Connector;
+import com.hht.sharelib.utils.Foo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
@@ -51,10 +55,18 @@ public class NioDataHandle extends Connector{
 
     }
 
+
+
     @Override
-    protected void onReceiveNewMessage(String str) {
-        super.onReceiveNewMessage(str);
-        mListener.onResponse(this,str);
+    protected void onReceivePacket(ReceivePacket packet) {
+        super.onReceivePacket(packet);
+        mListener.onResponse(this,packet);
+    }
+
+    @Override
+    protected File createNewReceiveFile() {
+        //先简单这样写
+        return Foo.createNewFile("server","test.png");
     }
 
     public DeviceInfo getInfo(){
@@ -62,7 +74,7 @@ public class NioDataHandle extends Connector{
     }
 
     public interface DataListener {
-        void onResponse(NioDataHandle handle, String msg);
+        void onResponse(NioDataHandle handle, ReceivePacket packet);
         void onSelfClosed(NioDataHandle handle);
         void onConnect(DeviceInfo info);
     }

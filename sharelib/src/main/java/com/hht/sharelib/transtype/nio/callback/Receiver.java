@@ -11,6 +11,6 @@ import java.io.IOException;
  */
 public interface Receiver extends Closeable {
     //单独抽出来，避免多次注册
-    void setReceiveListener(IoArgs.IoArgsEventListener listener);
-    boolean receiveAsync(IoArgs ioArgs) throws IOException;
+    void setReceiveListener(IoArgs.IoArgsEventProcessor processor);
+    boolean postReceiveAsync() throws IOException;
 }

@@ -1,6 +1,6 @@
 package com.hht.sharelib.transtype.nio.core.impl;
 
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 import com.hht.sharelib.transtype.nio.callback.IoProvider;
 import com.hht.sharelib.transtype.nio.callback.Receiver;
 import com.hht.sharelib.transtype.nio.callback.Sender;
@@ -19,9 +19,8 @@ public class SocketChannelAdapter implements Sender,Receiver,Closeable{
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private IoProvider mIoProvider;
     private SocketChannel mChannel;
-    private IoArgs mReceiveTempIoArgs;
-    private IoArgs.IoArgsEventListener mReceiveIoArgsListener;
-    private IoArgs.IoArgsEventListener mSendIoArgsListener;
+    private IoArgs.IoArgsEventProcessor mReceiveIoArgsProcessor;
+    private IoArgs.IoArgsEventProcessor mSendIoArgsProcessor;
     private ChannelCloseListener mListener;
     public SocketChannelAdapter(SocketChannel channel,IoProvider ioProvider,ChannelCloseListener listener){
         mChannel = channel;
@@ -29,32 +28,32 @@ public class SocketChannelAdapter implements Sender,Receiver,Closeable{
         mListener = listener;
     }
 
-
     @Override
-    public void setReceiveListener(IoArgs.IoArgsEventListener listener) {
-        mReceiveIoArgsListener = listener;
+    public void setReceiveListener(IoArgs.IoArgsEventProcessor processor) {
+        mReceiveIoArgsProcessor = processor;
     }
 
     @Override
-    public boolean receiveAsync(IoArgs ioArgs) throws IOException {
+    public boolean postReceiveAsync() throws IOException {
         if (isClosed.get()){
             throw new IOException("Current channel is closed");
         }
-        mReceiveTempIoArgs = ioArgs;
         return mIoProvider.registerInput(mChannel,inputCallback);
     }
 
     @Override
-    public boolean sendAsync(IoArgs args, IoArgs.IoArgsEventListener listener) throws IOException {
-        if (isClosed.get()){
-            throw new IOException("Current channel is closed");
-        }
-        mSendIoArgsListener = listener;
-        outputCallback.setAttach(args);
-        return mIoProvider.registerOutput(mChannel,outputCallback);
+    public void setSenderListener(IoArgs.IoArgsEventProcessor processor) {
+        mSendIoArgsProcessor = processor;
     }
 
 
+    @Override
+    public boolean postSendAsync() throws IOException {
+        if (isClosed.get()){
+            throw new IOException("Current channel is closed");
+        }
+        return mIoProvider.registerOutput(mChannel,outputCallback);
+    }
 
     private IoProvider.HandleOutputCallback outputCallback = new IoProvider.HandleOutputCallback() {
         @Override
@@ -63,15 +62,13 @@ public class SocketChannelAdapter implements Sender,Receiver,Closeable{
                 return;
             }
 
-            IoArgs args = getAttach();
-
-            IoArgs.IoArgsEventListener listener = mSendIoArgsListener;
-            listener.onStart(args);
+            IoArgs.IoArgsEventProcessor processor = mSendIoArgsProcessor;
+            IoArgs args = processor.provideIoArgs();
             try {
                 if (args.writeTo(mChannel) > 0){
-                    listener.onCompleted(args);
+                    processor.onConsumeCompleted(args);
                 }else{
-                    throw new IOException("Cannot write any data");
+                    processor.onConsumeFailed(args,new IOException("Cannot write any data"));
                 }
             } catch (IOException e) {
                 //e.printStackTrace();
@@ -88,16 +85,15 @@ public class SocketChannelAdapter implements Sender,Receiver,Closeable{
             if (isClosed.get()){
                 return;
             }
-            IoArgs args = mReceiveTempIoArgs;
-            IoArgs.IoArgsEventListener listener = mReceiveIoArgsListener;
+            IoArgs.IoArgsEventProcessor processor = mReceiveIoArgsProcessor;
+            IoArgs args = processor.provideIoArgs();
 
-            listener.onStart(args);
 
             try {
                 if (args.readFrom(mChannel) > 0){
-                    listener.onCompleted(args);
+                    processor.onConsumeCompleted(args);
                 }else{
-                    throw new IOException("Cannot read form any data");
+                    processor.onConsumeFailed(args,new IOException("Cannot read form any data"));
                 }
             } catch (IOException e) {
                 //e.printStackTrace();

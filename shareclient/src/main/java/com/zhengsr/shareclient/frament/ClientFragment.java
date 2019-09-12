@@ -15,6 +15,8 @@ import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.TcpClientListener;
 import com.zhengsr.shareclient.R;
 
+import java.io.File;
+
 /**
  * created by @author zhengshaorui on 2019/8/21
  * Describe:
@@ -58,6 +60,16 @@ public class ClientFragment extends Fragment implements TcpClientListener {
     @Override
     public void onResponse(String msg) {
         Log.d(TAG, "zsr onResponse: "+msg);
+    }
+
+    @Override
+    public void onFileStart(byte type) {
+
+    }
+
+    @Override
+    public void onFileSuccess(File file, byte type) {
+
     }
 
     @Override

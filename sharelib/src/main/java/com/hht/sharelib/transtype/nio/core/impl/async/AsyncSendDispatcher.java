@@ -1,16 +1,16 @@
 package com.hht.sharelib.transtype.nio.core.impl.async;
 
-import android.graphics.PointF;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 import com.hht.sharelib.callback.SendDispatcher;
 import com.hht.sharelib.transtype.nio.callback.Sender;
 import com.hht.sharelib.transtype.nio.core.IoArgs;
 import com.hht.sharelib.transtype.nio.packet.SendPacket;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,17 +20,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * created by @author zhengshaorui on 2019/8/20
  * Describe: 异步发送类具体实现，处理黏包和分包问题
  */
-public class AsyncSendDispatcher implements SendDispatcher{
+public class AsyncSendDispatcher implements SendDispatcher, IoArgs.IoArgsEventProcessor {
     private AtomicBoolean isSending = new AtomicBoolean();
     private AtomicBoolean isClosed = new AtomicBoolean();
     private Queue<SendPacket> mQueue;
-    private SendPacket mTempPacket;
+    private SendPacket<?> mTempPacket;
 
-    private int mPosition;
-    private int mTotal;
+    private long mPosition;
+    private long mTotal;
     private IoArgs mIoArgs = new IoArgs();
-
     private Sender mSender;
+    private ReadableByteChannel mByteChannel;
 
     public AsyncSendDispatcher(Sender sender) {
         this.mSender = sender;
@@ -39,6 +39,7 @@ public class AsyncSendDispatcher implements SendDispatcher{
         }else{
             mQueue = new ConcurrentLinkedQueue<>();
         }
+        mSender.setSenderListener(this);
     }
 
     @Override
@@ -81,53 +82,38 @@ public class AsyncSendDispatcher implements SendDispatcher{
     }
 
     /**
-     * 发送真正的数据
+     * 发送真正的数据,在发送之前，先检测是否发送完成
+     * 当未发送完成，重新注册即可
      */
     private void sendCurrentPacket() {
-        //先拿到 ioArgs
-        IoArgs args = mIoArgs;
-
-        args.startWriting();
 
         //判断是否发送完
         if (mPosition >= mTotal){
+            completePacket(mPosition == mTotal);
             sendNextMsg();
             return;
         }
-        //这个是首包，需要把长度信息写上，即占四个字节
-        if (mPosition == 0){
-            args.writeLength(mTotal);
-        }
-
-        //拿真正的数据
-        byte[] bytes = mTempPacket.bytes();
-        int count = args.readFrom(bytes, mPosition);
-
-        //记录标志，如果buffer不够，则继续填充数据
-        mPosition += count;
-
-        args.finishWriting();
-
         try {
-            mSender.sendAsync(args,sendEventListener);
+            mSender.postSendAsync();
         } catch (IOException e) {
            closeAndNotify();
         }
 
     }
 
-    IoArgs.IoArgsEventListener sendEventListener = new IoArgs.IoArgsEventListener() {
-        @Override
-        public void onStart(IoArgs args) {
+    private void completePacket(boolean isSuccess) {
+        SendPacket<?> packet = this.mTempPacket;
+        CloseUtils.close(packet);
+        mTempPacket = null;
 
-        }
+        ReadableByteChannel channel = this.mByteChannel;
+        CloseUtils.close(channel);
+        mByteChannel = null;
+        mTotal = 0;
+        mPosition = 0;
+    }
 
-        @Override
-        public void onCompleted(IoArgs args) {
-            //通过这种循环，可以让一个大数据，根据 buffer 大小去发送
-            sendCurrentPacket();
-        }
-    };
+
 
     @Override
     public void cancel(SendPacket packet) {
@@ -146,5 +132,41 @@ public class AsyncSendDispatcher implements SendDispatcher{
 
     private void closeAndNotify() {
         CloseUtils.close(this);
+    }
+
+    @Override
+    public IoArgs provideIoArgs() {
+
+        //先拿到 ioArgs
+        IoArgs args = mIoArgs;
+
+        if (mByteChannel == null){
+            mByteChannel = Channels.newChannel(mTempPacket.open());
+            args.limit(4);
+            //todo 字符串先用这个测试
+            args.writeLength((int) mTempPacket.length());
+        }else{
+            try {
+                args.limit((int) Math.min(args.capacity(),mTotal - mPosition));
+                int count = args.readFrom(mByteChannel);
+                //记录标志，如果buffer不够，则继续填充数据
+                mPosition += count;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return args;
+    }
+
+    @Override
+    public void onConsumeFailed(IoArgs args, Exception e) {
+        e.printStackTrace();
+    }
+
+    @Override
+    public void onConsumeCompleted(IoArgs args) {
+        //通过这种循环，可以让一个大数据，根据 buffer 大小去发送
+        sendCurrentPacket();
     }
 }

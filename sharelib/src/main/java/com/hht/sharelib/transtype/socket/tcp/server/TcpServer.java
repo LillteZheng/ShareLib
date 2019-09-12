@@ -8,8 +8,9 @@ import com.hht.sharelib.callback.TcpServerListener;
 import com.hht.sharelib.transtype.Server;
 import com.hht.sharelib.transtype.socket.TCPConstants;
 import com.hht.sharelib.transtype.socket.tcp.DataHandle;
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 
+import java.io.File;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -78,6 +79,10 @@ public class TcpServer implements DataHandle.DataListener,Server {
         }
     }
 
+    @Override
+    public void sendBroFile(File file) {
+
+    }
 
 
     /**

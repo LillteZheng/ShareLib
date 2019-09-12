@@ -3,7 +3,7 @@ package com.hht.sharelib.transtype.socket.udp.client;
 import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.transtype.socket.UDPConstants;
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.utils.CloseUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -97,7 +97,7 @@ public class UdpSearcher {
         private int port;
         private DatagramSocket ds;
         private boolean done = false;
-        private byte[] bytes = new byte[10];
+        private byte[] bytes = new byte[128];
         private ByteBuffer buffer;
         private List<DeviceInfo> deviceInfos = new ArrayList<>();
         private CountDownLatch startDownLatch,receiveDownLatch;
@@ -120,11 +120,15 @@ public class UdpSearcher {
                     ds.receive(packet);
                     String ip = packet.getAddress().getHostAddress();
                     int port = packet.getPort();
-                    buffer = ByteBuffer.wrap(bytes);
+                    int length = packet.getLength();
+                    buffer = ByteBuffer.wrap(bytes,0,length);
                     int cmd = buffer.getInt();
                     int tcpPort = buffer.getInt();
+                    int position = buffer.position();
+                    String name =  new String(bytes,position,length - position);
+                    //Log.d(TAG, "zsr run: "+name);
                     if (UDPConstants.RESPONSE == cmd && tcpPort > 0){
-                        DeviceInfo info = new DeviceInfo(ip,tcpPort,"server");
+                        DeviceInfo info = new DeviceInfo(ip,tcpPort,name);
                         deviceInfos.add(info);
                     }
                     //成功接受到一份

@@ -2,7 +2,11 @@ package com.hht.sharelib.transtype.nio.entrance.client;
 
 import android.util.Log;
 
-import com.hht.sharelib.CloseUtils;
+import com.hht.sharelib.transtype.nio.packet.ReceivePacket;
+import com.hht.sharelib.transtype.nio.packet.box.FileReceivePacket;
+import com.hht.sharelib.transtype.nio.packet.box.FileSendPacket;
+import com.hht.sharelib.transtype.nio.packet.box.StringReceivePacket;
+import com.hht.sharelib.utils.CloseUtils;
 import com.hht.sharelib.TransServiceManager;
 import com.hht.sharelib.bean.DeviceInfo;
 import com.hht.sharelib.callback.TcpClientListener;
@@ -11,7 +15,9 @@ import com.hht.sharelib.transtype.nio.IoContext;
 import com.hht.sharelib.transtype.nio.core.Connector;
 import com.hht.sharelib.transtype.nio.core.impl.IoSelectortProvider;
 import com.hht.sharelib.transtype.socket.TCPConstants;
+import com.hht.sharelib.utils.Foo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -28,7 +34,6 @@ public class NioClient extends Connector implements Client {
     private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
     private TcpClientListener mResponseListener;
     private DeviceInfo mInfo;
-
     @Override
     public void bindWidth(final String ip, final TcpClientListener listener){
         mResponseListener = listener;
@@ -91,6 +96,29 @@ public class NioClient extends Connector implements Client {
     public void sendMsg(String msg) {
         send(msg);
     }
+    @Override
+    public void sendFile(File file) {
+        FileSendPacket packet = new FileSendPacket(file);
+        //提醒对方要开始接收了
+        sendMsg(Foo.FILE_START);
+        sendPacket(packet);
+        if (mResponseListener != null){
+            Foo.HANDLER.post(new Runnable() {
+                @Override
+                public void run() {
+                    mResponseListener.onFileStart(Foo.TYPE_TRANS);
+                }
+            });
+        }
+
+
+    }
+
+    @Override
+    protected File createNewReceiveFile() {
+        //暂时先用这个
+        return Foo.createNewFile("client",".test.png");
+    }
 
     @Override
     public void onChannelClosed(final SocketChannel channel) {
@@ -107,10 +135,46 @@ public class NioClient extends Connector implements Client {
     }
 
     @Override
-    protected void onReceiveNewMessage(String str) {
-        super.onReceiveNewMessage(str);
-        if (mResponseListener != null){
-            mResponseListener.onResponse(str);
+    protected void onReceivePacket(ReceivePacket packet) {
+        super.onReceivePacket(packet);
+        if (packet instanceof StringReceivePacket){
+            if (mResponseListener != null){
+                String str = ((StringReceivePacket) packet).entity();
+                //收到文件接收完毕标志位,提示上层
+                if (str.equals(Foo.FILE_END)){
+                    Foo.HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mResponseListener.onFileSuccess(null,Foo.TYPE_TRANS);
+                        }
+                    });
+                    return;
+                }else if (str.equals(Foo.FILE_START)){
+                    //提示接收开始
+                    Foo.HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                           mResponseListener.onFileStart(Foo.TYPE_ACK);
+                        }
+                    });
+                    return;
+                }
+                mResponseListener.onResponse(str);
+            }
+        }
+        if (packet instanceof FileReceivePacket){
+            final File file = ((FileReceivePacket) packet).entity();
+            if (mResponseListener != null) {
+                Foo.HANDLER.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //此时已经接收到客户端发来文件，应该提示接收完成
+                        mResponseListener.onFileSuccess(file,Foo.TYPE_ACK);
+                    }
+                });
+            }
+            //发送一个应答信号过去，提示服务端已经接收到了文件
+            sendMsg(Foo.FILE_END);
         }
     }
 }
