@@ -13,6 +13,7 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements TcpServerListener {
     private static final String TAG = "MainActivity";
+    public static final String SERVERNUM = "服务端数字";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,6 @@ public class MainActivity extends AppCompatActivity implements TcpServerListener
     private int count;
     public void send(View view) {
         count ++;
-        TransServiceManager.sendBroServerMsg("服务端数字: "+count);
+        TransServiceManager.sendBroServerMsg(SERVERNUM + ": " +count);
     }
 }

@@ -42,6 +42,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
     private ClientListener mClientListener;
     private Selector mSelector;
     ServerSocketChannel server;
+    public  String mFileName;
     public static NioServer create(){
         try {
             IoContext.setUp()
@@ -117,8 +118,8 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
                 }
             });
         }
-        //发送之后，也要提醒对方要开始接收了
-        sendBroMsg(Foo.FILE_START);
+        //发送之后，也要提醒对方要开始接收了，也把文件名发送出去
+        sendBroMsg(Foo.FILE_START+file.getName());
         synchronized (NioServer.class) {
             for (NioDataHandle nioDataHandle : mNioDataHandles) {
                 nioDataHandle.sendPacket(new FileSendPacket(file));
@@ -169,7 +170,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
                             }
 
                             //客户端构建读写异步线程
-                            NioDataHandle clientHandle = new NioDataHandle(socketChannel,NioServer.this);
+                            NioDataHandle clientHandle = new NioDataHandle(socketChannel,NioServer.this,NioServer.this);
                             // clientHandle.readToPrint();
                             //同步，把客户端添加进来
                             synchronized (NioServer.this){
@@ -226,7 +227,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
 
                 }
                 return;
-            }else if (str.equals(Foo.FILE_START)){
+            }else if (str.startsWith(Foo.FILE_START)){
                 //提示接收开始
                 Foo.HANDLER.post(new Runnable() {
                     @Override
@@ -234,6 +235,7 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
                         mResponseListener.onFileStart(Foo.TYPE_ACK);
                     }
                 });
+                mFileName = str.split(" ")[1];
                 return;
             }
             //先发给自身

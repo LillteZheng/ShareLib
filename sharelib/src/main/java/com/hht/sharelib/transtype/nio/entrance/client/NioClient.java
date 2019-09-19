@@ -1,5 +1,6 @@
 package com.hht.sharelib.transtype.nio.entrance.client;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.hht.sharelib.transtype.nio.packet.ReceivePacket;
@@ -31,9 +32,11 @@ import java.util.concurrent.Executors;
  */
 public class NioClient extends Connector implements Client {
     private static final String TAG = "NioClient";
+    private static final String CLIENT = "client";
     private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
     private TcpClientListener mResponseListener;
     private DeviceInfo mInfo;
+    private String mFileName;
     @Override
     public void bindWidth(final String ip, final TcpClientListener listener){
         mResponseListener = listener;
@@ -90,6 +93,8 @@ public class NioClient extends Connector implements Client {
     public void stop(){
         IoContext.close();
         CloseUtils.close(this);
+        //把发送过来的缓存文件夹去掉
+        Foo.deleteFolder(CLIENT);
     }
 
     @Override
@@ -100,7 +105,7 @@ public class NioClient extends Connector implements Client {
     public void sendFile(File file) {
         FileSendPacket packet = new FileSendPacket(file);
         //提醒对方要开始接收了
-        sendMsg(Foo.FILE_START);
+        sendMsg(Foo.FILE_START+file.getName());
         sendPacket(packet);
         if (mResponseListener != null){
             Foo.HANDLER.post(new Runnable() {
@@ -110,14 +115,18 @@ public class NioClient extends Connector implements Client {
                 }
             });
         }
-
-
     }
 
     @Override
     protected File createNewReceiveFile() {
-        //暂时先用这个
-        return Foo.createNewFile("client",".test.png");
+        //用temp表示临时标量
+        if (!TextUtils.isEmpty(mFileName)){
+            mFileName = ".tmp."+mFileName.substring(mFileName.lastIndexOf(".")+1);
+            File file = Foo.createNewFile(CLIENT, mFileName);
+            mFileName = null;
+            return file;
+        }
+        return Foo.createNewFile(CLIENT,".test.tmp");
     }
 
     @Override
@@ -149,7 +158,7 @@ public class NioClient extends Connector implements Client {
                         }
                     });
                     return;
-                }else if (str.equals(Foo.FILE_START)){
+                }else if (str.startsWith(Foo.FILE_START)){
                     //提示接收开始
                     Foo.HANDLER.post(new Runnable() {
                         @Override
@@ -157,6 +166,13 @@ public class NioClient extends Connector implements Client {
                            mResponseListener.onFileStart(Foo.TYPE_ACK);
                         }
                     });
+                    String[] s  = str.split(" ");
+                    if (s.length > 1){
+                        mFileName = s[1];
+                    }else{
+                        mFileName = "test.png";
+                    }
+
                     return;
                 }
                 mResponseListener.onResponse(str);

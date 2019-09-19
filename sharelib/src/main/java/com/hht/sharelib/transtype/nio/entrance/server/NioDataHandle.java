@@ -1,5 +1,8 @@
 package com.hht.sharelib.transtype.nio.entrance.server;
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import com.hht.sharelib.transtype.nio.packet.ReceivePacket;
 import com.hht.sharelib.transtype.nio.packet.box.StringReceivePacket;
 import com.hht.sharelib.utils.CloseUtils;
@@ -16,11 +19,14 @@ import java.util.concurrent.Executors;
 public class NioDataHandle extends Connector{
     private static final String TAG = "NioDataHandle";
     private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+    private static final String SERVER = "server";
     private DataListener mListener;
     private  DeviceInfo mInfo;
     private SocketChannel mSocketChannel;
-    public NioDataHandle(SocketChannel socket, DataListener listener) {
+    private NioServer mNioServer;
+    public NioDataHandle(SocketChannel socket, DataListener listener,NioServer nioServer) {
         mSocketChannel = socket;
+        mNioServer = nioServer;
         mListener = listener;
         try {
             setUp(socket);
@@ -44,6 +50,8 @@ public class NioDataHandle extends Connector{
     public void exit() {
         CloseUtils.close(this);
         CloseUtils.close(mSocketChannel);
+        //同时也要清掉保存的缓存文件
+        Foo.deleteFolder(SERVER);
     }
 
 
@@ -63,10 +71,19 @@ public class NioDataHandle extends Connector{
         mListener.onResponse(this,packet);
     }
 
+
+
     @Override
     protected File createNewReceiveFile() {
-        //先简单这样写
-        return Foo.createNewFile("server","test.png");
+        String name = mNioServer.mFileName;
+        //用temp表示临时标量
+        if (!TextUtils.isEmpty(name)){
+            name = ".tmp."+name.substring(name.lastIndexOf(".")+1);
+            File file = Foo.createNewFile(SERVER, name);
+            mNioServer.mFileName = null;
+            return file;
+        }
+        return Foo.createNewFile(SERVER,".test.tmp");
     }
 
     public DeviceInfo getInfo(){
