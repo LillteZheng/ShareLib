@@ -35,9 +35,9 @@ public class Foo {
     }
 
     public static File createNewFile(String folderName,String name){
-      //  String parentPath = createCacheDir(folderName);
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        File dir = new File(path,name);
+        String parentPath = createCacheDir(folderName);
+       // String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File dir = new File(parentPath,name);
         if (!dir.exists()){
             try {
                 dir.createNewFile();
@@ -45,7 +45,18 @@ public class Foo {
                 e.printStackTrace();
             }
         }
-
         return dir;
+    }
+
+    public static boolean deleteFolder(String folderName){
+        File dir = new File(folderName);
+        if (dir.isDirectory()){
+            File[] files = dir.listFiles();
+            for (File file : files) {
+                file.delete();
+            }
+            return dir.delete();
+        }
+        return false;
     }
 }
