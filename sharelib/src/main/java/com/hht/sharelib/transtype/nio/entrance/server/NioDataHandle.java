@@ -61,6 +61,7 @@ public class NioDataHandle extends Connector{
         super.onChannelClosed(channel);
         exitBySelt();
 
+
     }
 
 

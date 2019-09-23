@@ -57,7 +57,6 @@ public class NioServer  implements NioDataHandle.DataListener,Server {
     private NioServer(){
         mForwardingThreadPoolExecutor = Executors.newSingleThreadExecutor();
         start();
-
     }
 
     /**

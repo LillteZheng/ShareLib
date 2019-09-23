@@ -16,8 +16,10 @@ public class Foo {
     public static Handler HANDLER = new Handler(Looper.getMainLooper());
     public static final String FILE_START = "--f_start ";
     public static final String FILE_END = "--f_end ";
-    public static final byte TYPE_TRANS = 1;
-    public static final byte TYPE_ACK = 2;
+    public static final byte TYPE_TRANS = 0X01;
+    public static final byte TYPE_ACK = 0X02;
+    public static final byte BG = 0X03;
+    public static final byte IMAGE = 0X04;
 
 
 
